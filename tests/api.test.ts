@@ -15,7 +15,7 @@ if (process.env.TEST_DATABASE_URL) process.env.DATABASE_URL = process.env.TEST_D
 else delete process.env.DATABASE_URL;
 delete process.env.POSTGRES_URL;
 delete process.env.VERCEL;
-const {default:handler} = await import("../api/index");
+const {default:handler} = await import("../api/index.js");
 const server = createServer(handler);
 await new Promise<void>(resolve => server.listen(0,"127.0.0.1",resolve));
 const {port} = server.address() as {port:number};

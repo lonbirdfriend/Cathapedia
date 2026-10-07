@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseGlossary, exportGlossary, plainText } from "../server/xml";
-import type { Entry } from "../shared/schema";
+import { parseGlossary, exportGlossary, plainText } from "../server/xml.js";
+import type { Entry } from "../shared/schema.js";
 const sample = `<?xml version="1.0"?><GLOSSARY><INFO><ENTRIES><ENTRY><CONCEPT>Ätiologie &amp; Alltag</CONCEPT><DEFINITION><![CDATA[<p>Eine Erklärung.</p><p><strong>Beispiel:</strong> Etwas tun.</p><script>alert(1)</script>]]></DEFINITION><CATEGORIES><CATEGORY><NAME>Grundlagen</NAME></CATEGORY><CATEGORY><NAME>Alltag</NAME></CATEGORY></CATEGORIES><ALIASES><ALIAS><NAME>Test</NAME></ALIAS></ALIASES></ENTRY></ENTRIES></INFO></GLOSSARY>`;
 test("Moodle HTML, Unicode, categories and aliases", () => {
   const [e] = parseGlossary(sample);

@@ -1,7 +1,7 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import sanitizeHtml from "sanitize-html";
 import he from "he";
-import { insertEntrySchema, type InsertEntry, type Entry } from "../shared/schema";
+import { insertEntrySchema, type InsertEntry, type Entry } from "../shared/schema.js";
 
 export function plainText(input: unknown): string {
   if (typeof input !== "string" && typeof input !== "number") return "";

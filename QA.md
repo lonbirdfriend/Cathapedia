@@ -39,3 +39,15 @@ Stand: 7. Oktober 2026.
 `npm audit --omit=dev` meldete bei der Prüfung keine bekannten Schwachstellen in den Produktionsabhängigkeiten. Der vollständige Audit meldete neun Befunde in der Tailwind-3-Build-Werkzeugkette; sie sind nicht Bestandteil der ausgelieferten Browser-/API-Laufzeit. Das ist kein vollständiges Sicherheitsaudit; insbesondere bleibt die öffentliche Schreibfunktion bewusst offen.
 
 Nicht ausgeführt: ein Deploy im Vercel-Account des Nutzers, eine Verbindung zu dessen Cloud-Datenbank oder ein Rückimport in dessen echte Moodle-Instanz. Die dafür nötigen Schritte stehen in der README.
+
+## Korrektur nach dem ersten Vercel-Deploy
+
+Der erste echte Vercel-Deploy zeigte `ERR_MODULE_NOT_FOUND` für `/var/task/server/app`. Die ursprünglichen lokalen Tests mit `tsx` und dem gebündelten CJS-Server erkannten die fehlenden Dateiendungen in den ESM-Imports nicht. Die frühere Aussage „Vercel-Frontend-Build bestanden“ war kein Nachweis für den Start der Vercel-API.
+
+Die relativen Imports im Server-Abhängigkeitsbaum wurden auf `.js` umgestellt. Zusätzlich prüft `tsconfig.api.json` unter NodeNext, und CI führt den erzeugten ESM-Code mit normalem Node aus.
+
+Die Korrektur wurde mit dem tatsächlichen lokalen Builder `@vercel/node` 22.0.0 überprüft: Das erzeugte Funktionspaket enthält `api/index.js`, die transitiven Serverdateien und `shared/schema.js`. Der Handler startete unter Node 22.23.3 ohne `tsx`; Healthcheck, Anmeldung, Adminschutz und die Fehlermeldung bei fehlender Datenbank bestanden. Die Korrektur verändert weder Schema noch gespeicherte Glossareinträge.
+
+Zusätzlich wurde das erzeugte Vercel-Funktionspaket mit einer echten lokalen PostgreSQL-Datenbank gestartet: Öffentlicher Testeintrag, XML-Export und autorisiertes Löschen bestanden. Der Testeintrag wurde wieder entfernt.
+
+Ein erneuter Deploy im Nutzerkonto muss nach Übernahme des Patches erfolgen. Die Kontoverbindung und die dortige Neon-Konfiguration wurden durch diese lokale Buildprüfung nicht geändert oder verifiziert.

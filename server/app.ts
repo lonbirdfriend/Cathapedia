@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express, { type Request, type Response, type NextFunction } from "express";
 import { ZodError } from "zod";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes.js";
 export const app = express();
 app.disable("x-powered-by");
 app.use("/api", (_req,res,next) => { res.setHeader("Cache-Control","no-store"); res.setHeader("X-Content-Type-Options","nosniff"); next(); });

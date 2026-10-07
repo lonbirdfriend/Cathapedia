@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { storage } from "../server/storage";
+import { storage } from "../server/storage.js";
 // Explicit opt-in only. Production starts empty; it never inserts demo content automatically.
 const examples = [
   {concept:"Adaptation",definition:"Anpassung einer Aufgabe, eines Gegenstands oder der Umwelt an individuelle Voraussetzungen.",example:"Einen Griff verdicken, damit er leichter gehalten wird.",categories:["Alltag und Intervention"],aliases:["Anpassung"]},

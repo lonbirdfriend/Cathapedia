@@ -172,6 +172,7 @@ Es gibt eine einfache, pro Serverinstanz wirksame Bremse gegen wiederholte Login
 npm run dev           # Express + Vite, Port 5000
 npm run check         # TypeScript
 npm test              # XML- und HTTP-Integrationstests
+npm run test:api-runtime # Kompilierte API direkt in Node ESM prüfen, ohne tsx
 npm run build         # Frontend + eigenständig startbarer Node-Server
 npm start             # zuvor npm run build ausführen
 npm run build:vercel  # Vite-Frontend; API baut Vercel separat
@@ -191,7 +192,14 @@ server/xml.ts           Moodle-XML-Import und -Export
 api/index.ts            Vercel-Funktion
 vercel.json             Build, API-Rewrites, Header
 tests/                  Reproduzierbare Tests
+tsconfig.api.json        Strikte Node-ESM-Prüfung für die Vercel-API
 ```
+
+### Relative Serverimports und Vercel
+
+Relative Imports im API-/Servercode tragen ausdrücklich die Endung `.js`, auch wenn die Quelldatei auf `.ts` endet. TypeScript löst sie beim Prüfen gegen die `.ts`-Datei auf; im erzeugten JavaScript benötigt Node die vollständige Dateiendung ([TypeScript-Dokumentation](https://www.typescriptlang.org/docs/handbook/modules/reference.html), [Node-ESM-Dokumentation](https://nodejs.org/api/esm.html)).
+
+`npm run build:vercel` führt vor dem Frontendbuild eine zusätzliche NodeNext-Prüfung aus. `npm run test:api-runtime` kompiliert den API-Abhängigkeitsbaum nach `.api-runtime/` und ruft den erzeugten Handler mit normalem Node auf, ohne den toleranteren Resolver von `tsx`. Der Test setzt ausdrücklich leere Datenbankvariablen und prüft nur Start, Routing, Anmeldung, Adminschutz und den Fehlerfall ohne Datenbank; echte Nutzerdaten werden nicht verändert.
 
 Bei Weiterentwicklung das `db:push`-Skript nicht gegen PostgreSQL verwenden: Die mitgelieferte Drizzle-Konfiguration ist für das lokale SQLite-Schema gedacht. Der aktuelle Produktivpfad erzeugt das identische Tabellenschema direkt über die SQL-Anweisung in `server/storage.ts`; spätere Schemaänderungen brauchen eine passende Migration.
 

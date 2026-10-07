@@ -1,10 +1,10 @@
 import type { Express, RequestHandler } from "express";
 import type { Server } from "node:http";
 import { z } from "zod";
-import { storage } from "./storage";
-import { conceptKey, insertEntrySchema } from "../shared/schema";
-import { parseGlossary, exportGlossary, plainText } from "./xml";
-import { checkPassword, issueToken, requireAdmin } from "./auth";
+import { storage } from "./storage.js";
+import { conceptKey, insertEntrySchema } from "../shared/schema.js";
+import { parseGlossary, exportGlossary, plainText } from "./xml.js";
+import { checkPassword, issueToken, requireAdmin } from "./auth.js";
 
 const asyncRoute = (handler: RequestHandler): RequestHandler => (req,res,next) => { Promise.resolve(handler(req,res,next)).catch(next); };
 function validated(data: unknown) {

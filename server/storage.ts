@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import { and, eq } from "drizzle-orm";
-import { entries, conceptKey, type Entry, type InsertEntry } from "../shared/schema";
+import { entries, conceptKey, type Entry, type InsertEntry } from "../shared/schema.js";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type Database from "better-sqlite3";
 
