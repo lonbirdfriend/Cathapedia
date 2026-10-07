@@ -1,13 +1,31 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
-import sanitizeHtml from "sanitize-html";
-import he from "he";
+import { Parser } from "htmlparser2";
 import { insertEntrySchema, type InsertEntry, type Entry } from "../shared/schema.js";
 
 export function plainText(input: unknown): string {
   if (typeof input !== "string" && typeof input !== "number") return "";
-  // HTML is converted to readable text, never rendered or executed in the client.
-  const withBreaks = String(input).replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n").replace(/<li(?:\s[^>]*)?>/gi, "• ");
-  return he.decode(sanitizeHtml(withBreaks, { allowedTags: [], allowedAttributes: {} })).replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  // Extract text directly via native ESM. Do not require an ESM parser through
+  // a CommonJS sanitization wrapper: some serverless loaders prohibit that.
+  // This returns text, NOT sanitized HTML. The client renders it as React text.
+  const parts: string[] = [];
+  const hiddenTags = new Set(["script", "style", "textarea", "option", "iframe", "object", "template", "noscript"]);
+  const blockTags = new Set(["p", "div", "li", "h1", "h2", "h3", "h4", "h5", "h6", "tr", "section", "article", "blockquote"]);
+  let hiddenDepth = 0;
+  const parser = new Parser({
+    onopentag(name) {
+      if (hiddenDepth > 0) { hiddenDepth++; return; }
+      if (hiddenTags.has(name)) { hiddenDepth = 1; return; }
+      if (name === "br") parts.push("\n");
+      if (name === "li") parts.push("• ");
+    },
+    ontext(value) { if (hiddenDepth === 0) parts.push(value); },
+    onclosetag(name) {
+      if (hiddenDepth > 0) { hiddenDepth--; return; }
+      if (blockTags.has(name)) parts.push("\n");
+    },
+  }, { decodeEntities: true, xmlMode: false });
+  parser.end(String(input));
+  return parts.join("").replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 const array = (x: any): any[] => x === undefined || x === null ? [] : Array.isArray(x) ? x : [x];
 function text(x: any) { return plainText(x && typeof x === "object" ? x["#text"] : x); }

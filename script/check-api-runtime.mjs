@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { randomBytes } from "node:crypto";
 
-// Run the emitted JS in plain Node, without tsx, Vite or a bundler resolver.
+// Run emitted JS in plain Node without tsx, Vite or a bundler resolver.
+// package.json also disables require(ESM), reproducing strict serverless loaders.
 // Empty strings prevent dotenv from loading the user's real database credentials.
 process.env.VERCEL = "1";
 process.env.DATABASE_URL = "";

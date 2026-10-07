@@ -12,6 +12,7 @@ const allowlist = [
   "drizzle-orm",
   "drizzle-zod",
   "express",
+  "htmlparser2",
   "express-rate-limit",
   "express-session",
   "jsonwebtoken",

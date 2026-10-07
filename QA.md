@@ -51,3 +51,15 @@ Die Korrektur wurde mit dem tatsächlichen lokalen Builder `@vercel/node` 22.0.0
 Zusätzlich wurde das erzeugte Vercel-Funktionspaket mit einer echten lokalen PostgreSQL-Datenbank gestartet: Öffentlicher Testeintrag, XML-Export und autorisiertes Löschen bestanden. Der Testeintrag wurde wieder entfernt.
 
 Ein erneuter Deploy im Nutzerkonto muss nach Übernahme des Patches erfolgen. Die Kontoverbindung und die dortige Neon-Konfiguration wurden durch diese lokale Buildprüfung nicht geändert oder verifiziert.
+
+## Zweiter Laufzeitfehler und strengere Regression
+
+Der Logexport des Nutzers enthält zwei Deployments. Beim neueren Deployment um 18:30 Uhr CEST ist die relative Importkette aufgelöst; stattdessen scheitert `sanitize-html` 2.18.0 an einem CommonJS-`require()` des ESM-only-Pakets `htmlparser2` 12.0.0. Das war ein anderer Fehler als `ERR_MODULE_NOT_FOUND`.
+
+Dieser Fehler ließ sich lokal identisch mit `node --no-experimental-require-module` reproduzieren. Die vorherige Prüfung in normalem Node 22 hatte diesen strengeren Fall nicht abgedeckt.
+
+Die nicht mehr benötigte Sanitizer-Hülle und ihre Typ-/Entity-Hilfspakete wurden entfernt. Die Anwendung extrahiert jetzt mit einem direkten ESM-Import von `htmlparser2` ausschließlich Text; Absätze, Listen und Entities bleiben lesbar, Script-/Style-/Template-Inhalte und Attribute werden verworfen. Der Browser rendert die Inhalte weiterhin als React-Text, nicht als HTML.
+
+Der API-Laufzeittest deaktiviert jetzt dauerhaft `require(ESM)`, und zusätzliche Tests decken Text-Extraktion und verschachtelte ausgeblendete Elemente ab. Paketmanifest und Lockfile sind gemeinsam aktualisiert.
+
+Ergebnis: Alle acht Tests bestanden. Das frisch erzeugte `@vercel/node`-Funktionspaket startete mit `--no-experimental-require-module` unter Node 22.23.3 und bestand Anmeldung, PostgreSQL-Schreiben/-Lesen/-Löschen sowie XML-Import und -Export. Die Tracing-Dateiliste enthält `sanitize-html` nicht mehr. Ein zusätzlicher Chromium-Test importierte HTML mit Script-/Template-Inhalten, zeigte nur den erwarteten Text an und führte kein Script aus; der Testeintrag wurde anschließend entfernt.

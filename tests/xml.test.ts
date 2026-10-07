@@ -33,3 +33,11 @@ test("Export has Moodle structure and restores native fields without repetition"
 test("HTML sanitization preserves human text but not scripts", () => {
   assert.equal(plainText('<img src=x onerror="alert(1)"><b>Hallo</b> &amp; Welt<script>bad()</script>'),"Hallo & Welt");
 });
+test("Text extractor discards non-content elements, comments and attributes", () => {
+  assert.equal(plainText('<style>hidden</style><template><div><b>hidden</b></div></template><iframe>hidden</iframe><!-- hidden --><p onclick="bad()">Sichtbar &amp; lesbar.</p>'),"Sichtbar & lesbar.");
+});
+test("Text extractor keeps readable paragraphs, lists, umlauts and encoded text", () => {
+  assert.equal(plainText("<p>Äpfel &amp; Öl<br>Übung</p><ul><li>Erstens</li><li>Zweitens</li></ul>"),"Äpfel & Öl\nÜbung\n• Erstens\n• Zweitens");
+  assert.equal(plainText("&lt;script&gt;Text, kein HTML&lt;/script&gt;"),"<script>Text, kein HTML</script>");
+  assert.equal(plainText("Druck < 5 und > 1"),"Druck < 5 und > 1");
+});

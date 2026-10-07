@@ -199,7 +199,9 @@ tsconfig.api.json        Strikte Node-ESM-Prüfung für die Vercel-API
 
 Relative Imports im API-/Servercode tragen ausdrücklich die Endung `.js`, auch wenn die Quelldatei auf `.ts` endet. TypeScript löst sie beim Prüfen gegen die `.ts`-Datei auf; im erzeugten JavaScript benötigt Node die vollständige Dateiendung ([TypeScript-Dokumentation](https://www.typescriptlang.org/docs/handbook/modules/reference.html), [Node-ESM-Dokumentation](https://nodejs.org/api/esm.html)).
 
-`npm run build:vercel` führt vor dem Frontendbuild eine zusätzliche NodeNext-Prüfung aus. `npm run test:api-runtime` kompiliert den API-Abhängigkeitsbaum nach `.api-runtime/` und ruft den erzeugten Handler mit normalem Node auf, ohne den toleranteren Resolver von `tsx`. Der Test setzt ausdrücklich leere Datenbankvariablen und prüft nur Start, Routing, Anmeldung, Adminschutz und den Fehlerfall ohne Datenbank; echte Nutzerdaten werden nicht verändert.
+`npm run build:vercel` führt vor dem Frontendbuild eine zusätzliche NodeNext-Prüfung aus. `npm run test:api-runtime` kompiliert den API-Abhängigkeitsbaum nach `.api-runtime/` und ruft den erzeugten Handler mit normalem Node auf, ohne den toleranteren Resolver von `tsx` und mit deaktiviertem `require(ESM)`. Der Test setzt ausdrücklich leere Datenbankvariablen und prüft nur Start, Routing, Anmeldung, Adminschutz und den Fehlerfall ohne Datenbank; echte Nutzerdaten werden nicht verändert.
+
+Die HTML-zu-Text-Konvertierung verwendet `htmlparser2` direkt als ESM-Import. Es gibt keine Abhängigkeit von `sanitize-html`: Dessen CommonJS-Wrapper konnte in der beobachteten Vercel-Laufzeit seinen ESM-Parser nicht laden. Cathapedia speichert und zeigt ausschließlich Text an, keine bereinigten HTML-Fragmente; Elemente wie `script`, `style` und `template` werden bei der Extraktion verworfen.
 
 Bei Weiterentwicklung das `db:push`-Skript nicht gegen PostgreSQL verwenden: Die mitgelieferte Drizzle-Konfiguration ist für das lokale SQLite-Schema gedacht. Der aktuelle Produktivpfad erzeugt das identische Tabellenschema direkt über die SQL-Anweisung in `server/storage.ts`; spätere Schemaänderungen brauchen eine passende Migration.
 
