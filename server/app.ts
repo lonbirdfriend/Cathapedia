@@ -1,0 +1,20 @@
+import "dotenv/config";
+import express, { type Request, type Response, type NextFunction } from "express";
+import { ZodError } from "zod";
+import { registerRoutes } from "./routes";
+export const app = express();
+app.disable("x-powered-by");
+app.use("/api", (_req,res,next) => { res.setHeader("Cache-Control","no-store"); res.setHeader("X-Content-Type-Options","nosniff"); next(); });
+app.use(express.json({limit:"4mb"}));
+registerRoutes(null, app);
+app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) return next(err);
+  if (err instanceof ZodError) return res.status(400).json({message:`Bitte die Eingaben prüfen: ${err.issues[0]?.message}`});
+  if (err.code === "23505" || err.code === "SQLITE_CONSTRAINT_UNIQUE") return res.status(409).json({message:"Diesen Begriff gibt es bereits."});
+  if (err.type === "entity.too.large") return res.status(413).json({message:"Die Datei ist zu groß. Bitte auf höchstens 3 MB begrenzen."});
+  if (err.type === "entity.parse.failed") return res.status(400).json({message:"Die Anfrage enthält ungültige Daten."});
+  if (err.message?.startsWith("Die XML") || err.message?.startsWith("Keine Einträge") || err.message?.startsWith("Eintrag ") || err.message?.startsWith("Pro Import") || err.message?.startsWith("DTD-")) return res.status(400).json({message:err.message});
+  console.error("Request failed", {code:err.code, message:err.message});
+  res.status(err.status || 500).json({message:err.status === 503 ? err.message : "Speichern oder Laden hat nicht geklappt. Bitte später erneut versuchen."});
+});
+export default app;
